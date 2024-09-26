@@ -1,5 +1,5 @@
-from peewee import Model, CharField, DateTimeField, BigIntegerField
-import User
+from peewee import Model, BigIntegerField, ForeignKeyField
+from user import User
 
 class Subscriber(Model):
     id = BigIntegerField(primary_key=True, autoincrement=True)
