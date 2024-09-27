@@ -39,10 +39,18 @@ class Subscriber(BaseModel):
     user = ForeignKeyField(User, field='id', unique=True, backref='user')
 
 
-class DbContext:
-    def __init__(self):
-        sqlite_db.connect()
-        sqlite_db.create_tables([User, Employee, Reminder, Subscriber])
+class AppContext:
 
-    def __del__(self):
-        sqlite_db.close()
+    db = None
+
+    def __init__(self):
+        self.db = SqliteDatabase(DATABASE)
+
+    async def __aenter__(self):
+        self.db.connect()
+        with self.db.atomic():
+            self.db.create_tables([User, Employee, Reminder, Subscriber], safe=True)
+        return self.db
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        self.db.close()
