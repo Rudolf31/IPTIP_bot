@@ -70,7 +70,7 @@ class AppContext:
     def __init__(self):
         self._db = SqliteDatabase(DATABASE)
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> SqliteDatabase:
         self._db.connect()
         with self._db.atomic():
             self._db.create_tables([User, Employee, Reminder, Subscriber], safe=True)

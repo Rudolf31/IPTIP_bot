@@ -3,6 +3,6 @@ from database.application_context import Employee
 
 
 class EmployeeController():
-    async def addEmployee(employee):
+    async def addEmployee(employee) -> Employee:
 
         raise NotImplementedError
