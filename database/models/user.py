@@ -1,6 +1,6 @@
-from peewee import Model, BooleanField, BigIntegerField
+from peewee import Model, BooleanField, BigIntegerField, AutoField
 
 class User(Model):
-    id = BigIntegerField(primary_key=True, autoincrement=True) 
+    id = AutoField(primary_key=True) 
     tg_id = BigIntegerField(unique=True, null=False)
     admin = BooleanField(default=False)

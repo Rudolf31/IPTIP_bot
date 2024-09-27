@@ -166,3 +166,6 @@ cython_debug/
 
 # temporary version of python
 .venv/*
+
+# database
+database.db

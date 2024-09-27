@@ -1,7 +1,9 @@
 from peewee import SqliteDatabase
 from config import DATABASE
-from database.models import User, Employee, Reminder, Subscriber
-
+from database.models.user import User
+from database.models.employee import Employee
+from database.models.reminder import Reminder
+from database.models.subscriber import Subscriber
 
 
 class AppContext:
@@ -12,7 +14,7 @@ class AppContext:
         
         self.database.connect()
         
-        await self.database.create_tables([User, Employee, Reminder, Subscriber], safe=True)
+        await self.database.create_tables([User,   Subscriber], safe=True)
         return self.database
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

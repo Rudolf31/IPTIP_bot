@@ -1,6 +1,6 @@
-from peewee import Model, BigIntegerField, ForeignKeyField
-from user import User
+from peewee import Model, BigIntegerField, ForeignKeyField, AutoField
+from .user import User
 
 class Subscriber(Model):
-    id = BigIntegerField(primary_key=True, autoincrement=True)
+    id = AutoField(primary_key=True) 
     user_id = ForeignKeyField(User, field='id', unique=True)
