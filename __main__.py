@@ -5,6 +5,7 @@ import asyncio
 from database.application_context import AppContext
 
 
+# TODO: remove when done with tinkering
 async def test():
     async with AppContext() as database:
         pass
