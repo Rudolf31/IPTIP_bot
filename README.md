@@ -1,6 +1,8 @@
 # IPTIP_bot
 ![GitHub Release](https://img.shields.io/github/v/release/Rudolf31/IPTIP_bot) ![License](https://img.shields.io/badge/license-MIT-blue) ![Codacy Badge](https://app.codacy.com/project/badge/Grade/837c62cd09bb45ca836c470f67f953ca) ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Rudolf31/IPTIP_bot/total) 
 
+A corporate Telegram bot which serves birthday reminders to your employees or coworkers. 
+
 # Roadmap
 - [ ] Automatic birthday reminders
 - [ ] Extra birthday reminders (manually requested)
