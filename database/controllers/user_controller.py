@@ -30,7 +30,7 @@ class UserController():
         async with AppContext() as database:
             with database.atomic():
 
-                return User.get(User.id == id)
+                return User.get_or_none(User.id == id)
 
     async def getUserByTgId(tg_id) -> User:
         """
@@ -43,7 +43,7 @@ class UserController():
         async with AppContext() as database:
             with database.atomic():
 
-                return User.get(User.tg_id == tg_id)
+                return User.get_or_none(User.tg_id == tg_id)
 
     async def deleteUser(id) -> bool:
         """
