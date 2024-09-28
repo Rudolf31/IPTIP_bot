@@ -2,13 +2,13 @@ from services.bot_service import run_bot
 import logging
 import sys
 import asyncio
-from database.application_context import AppContext
+from database.application_context import AppContext, User
+from database.controllers.user_controller import UserController
 
 
 # TODO: remove when done with tinkering
 async def test():
-    async with AppContext() as database:
-        pass
+    pass
 
 
 def main() -> None:
