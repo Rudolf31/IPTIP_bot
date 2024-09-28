@@ -1,9 +1,8 @@
-from services.bot_service import run_bot
 import logging
 import sys
 import asyncio
-from database.application_context import AppContext, User
-from database.controllers.user_controller import UserController
+
+from services.bot_service import run_bot
 
 
 # TODO: remove when done with tinkering
