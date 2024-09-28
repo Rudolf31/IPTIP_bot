@@ -18,14 +18,14 @@ class EmployeeController():
         async with AppContext() as database:
             with database.atomic():
 
-                return Employee.get(Employee.id == id)
+                return Employee.get_or_none(Employee.id == id)
 
     async def getEmployeeByTgId(tg_id) -> Employee:
 
         async with AppContext() as database:
             with database.atomic():
 
-                return Employee.get(Employee.tg_id == tg_id)
+                return Employee.get_or_none(Employee.tg_id == tg_id)
 
 
     async def deleteEmployee(id) -> bool:
