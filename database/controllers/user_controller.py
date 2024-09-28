@@ -1,8 +1,8 @@
 from database.application_context import AppContext
+from database.application_context import User
 
-# async def user_controller():
-#     async with AppContext() as database:
-#         pass
 
-#class UserController(): 
-#    async def addUser(user):
+class UserController():
+    async def addUser(user) -> User:
+
+        raise NotImplementedError

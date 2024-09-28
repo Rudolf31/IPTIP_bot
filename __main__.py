@@ -4,14 +4,18 @@ import sys
 import asyncio
 from database.application_context import AppContext
 
+
+# TODO: remove when done with tinkering
 async def test():
     async with AppContext() as database:
         pass
+
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     asyncio.run(test())
     asyncio.run(run_bot())
+
 
 if __name__ == "__main__":
     main()
