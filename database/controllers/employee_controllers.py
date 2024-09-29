@@ -29,7 +29,7 @@ class EmployeeController():
         Returns the Employee object from the database that
         matches the given id.
 
-        id - id of Employee
+        id - id of Employee.
         """
         async with AppContext() as database:
             with database.atomic():
@@ -53,7 +53,7 @@ class EmployeeController():
         Deletes the employee that matches the employee id from
         the database. Returns true on success.
 
-        id - id of Employee
+        id - id of Employee.
         """
         async with AppContext() as database:
             with database.atomic():
@@ -67,7 +67,7 @@ class EmployeeController():
         Updates the employee that matches the employee id from
         the database. Returns true on success.
 
-        id - id of Employee
+        id - id of Employee.
         """
         async with AppContext() as database:
             with database.atomic():
