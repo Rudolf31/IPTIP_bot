@@ -1,11 +1,12 @@
 from aiogram import Bot, Dispatcher, html
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 
 from config import TOKEN
 from services.user_service import UserService
+from services.employee_service import EmployeeService
 
 
 # All handlers should be attached to the Router (or Dispatcher)
@@ -22,6 +23,11 @@ async def command_start_handler(message: Message) -> None:
 
     await message.answer(f"Hello, {html.bold(message.from_user.full_name)}!")
 
+@dp.message(Command("employees"))
+async def get_employees_handler(message: Message) -> None:
+    employees_list = await EmployeeService.getEmployeeList()
+    formatted_list = "\n".join(employees_list)
+    await message.answer(formatted_list)
 
 @dp.message()
 async def echo_handler(message: Message) -> None:

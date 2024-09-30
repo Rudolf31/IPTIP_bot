@@ -48,6 +48,15 @@ class EmployeeController():
 
                 return Employee.get_or_none(Employee.tg_id == tg_id)
 
+    async def getEmployees() -> list:
+        """
+        Returns all employees from the database.
+        """
+        async with AppContext() as database:
+            with database.atomic():
+
+                return list(Employee.select())
+
     async def deleteEmployee(id) -> bool:
         """
         Deletes the employee that matches the employee id from
