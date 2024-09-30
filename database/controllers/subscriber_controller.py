@@ -83,6 +83,15 @@ class SubscriberController():
                         .where(User.tg_id == user_tg_id)
                         .get_or_none())
 
+    async def getSubscribers() -> list:
+        """
+        Returns all subscribers from the database.
+        """
+        async with AppContext() as database:
+            with database.atomic():
+
+                return list(Subscriber.select())
+
     async def deleteSubscriberById(id) -> bool:
         """
         Deletes the subscriber that matches the subscriber id from
