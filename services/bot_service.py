@@ -23,7 +23,7 @@ async def command_start_handler(message: Message) -> None:
 
     await message.answer(f"Hello, {html.bold(message.from_user.full_name)}!")
 
-@dp.message(Command("ping"))
+@dp.message(Command("employees"))
 async def get_employees_handler(message: Message) -> None:
     employees_list = await EmployeeService.getEmployeeList()
     formatted_list = "\n".join(employees_list)
