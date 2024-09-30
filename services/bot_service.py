@@ -7,6 +7,7 @@ from aiogram.types import Message
 from config import TOKEN
 from services.user_service import UserService
 from services.employee_service import EmployeeService
+from services.subscription_service import SubscriptionService
 
 
 # All handlers should be attached to the Router (or Dispatcher)
@@ -22,6 +23,19 @@ async def command_start_handler(message: Message) -> None:
         await UserService.userRegister(message.from_user)
 
     await message.answer(f"Hello, {html.bold(message.from_user.full_name)}!")
+
+
+@dp.message(Command("subscribe"))
+async def set_user_subscription_state(message: Message) -> None:
+    success = await SubscriptionService.setUserSubscriptionState(message.from_user.id, state=True)
+    await message.answer(f"Subscribed: {success}")
+
+
+@dp.message(Command("unsubscribe"))
+async def set_user_subscription_state(message: Message) -> None:
+    success = await SubscriptionService.setUserSubscriptionState(message.from_user.id, state=False)
+    await message.answer(f"Unsubscribed: {success}")
+    
 
 @dp.message(Command("employees"))
 async def get_employees_handler(message: Message) -> None:
