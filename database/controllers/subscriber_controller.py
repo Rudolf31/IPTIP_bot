@@ -1,3 +1,5 @@
+from warnings import deprecated
+
 from database.application_context import AppContext
 from database.application_context import Subscriber, User
 
@@ -7,6 +9,7 @@ class SubscriberController():
     SubscriberController for database actions
     related to subscribers.
     """
+    @deprecated("Redundant object copying. Switch to addSubscriberFromUserId.")
     async def addSubscriberFromUser(user) -> Subscriber:
         """
         Addition of a new subscriber.
@@ -19,6 +22,22 @@ class SubscriberController():
 
                 new_subscriber = Subscriber.create(
                     user=user
+                )
+
+                new_subscriber.save()
+                return new_subscriber
+
+    async def addSubscriberFromUserId(user_id) -> Subscriber:
+        """
+        Addition of a new subscriber.
+
+        user_id - id of the user.
+        """
+        async with AppContext() as database:
+            with database.atomic():
+
+                new_subscriber = Subscriber.create(
+                    user=user_id
                 )
 
                 new_subscriber.save()
