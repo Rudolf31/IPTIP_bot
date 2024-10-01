@@ -1,4 +1,8 @@
+from sys import exit
 from os import getenv
+from dotenv import load_dotenv
+
+load_dotenv(override=False)
 
 """
 Configuration file for the bot.
@@ -12,7 +16,13 @@ environment instead.
 
 
 # BOT_TOKEN - Your Telegram bot token (Avaiable from @BotFather)
-TOKEN = getenv("BOT_TOKEN")
+#    (Example: 1234567890:ABCDefghijk)
+TOKEN = getenv("BOT_TOKEN") or exit("BOT_TOKEN not found in environment!")
 
 # DATABASE - Your SQLite database path.
-DATABASE = getenv("DATABASE")
+#    (Default: database.db)
+DATABASE = getenv("DATABASE") or "database.db"
+
+# ADMINS - List of admin Telegram IDs with complete access.
+#    (Example: 1234567890,1234567891,1234567892)
+ADMINS = list((getenv("ADMINS") or "").split(","))

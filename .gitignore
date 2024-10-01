@@ -161,11 +161,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# environment variables
+# VSCode configuration
 .vscode/*
 
-# temporary version of python
-.venv/*
-
-# database
+# Default database file
 database.db
