@@ -2,6 +2,7 @@ import logging
 import time
 
 from config import BIRTHDAY_NOTIFICATION_DAY_OFFSET
+from config import BIRTHDAY_TSTAMP_FORMAT, REMINDER_TSTAMP_FORMAT
 
 from database.controllers.employee_controller import EmployeeController
 
@@ -71,19 +72,19 @@ class DistributionService:
         employee - must be an Employee object
         """
         # Since the birthday is in the format dd-mm-yyyy
-        birthday_timestamp = time.strptime(employee.birthday, "%d-%m-%Y")
+        birthday_timestamp = time.strptime(employee.birthday, BIRTHDAY_TSTAMP_FORMAT)
 
         # Generated but will not necessarily be used
         new_scheduled_reminder = cls.calculateNotificaionTime(birthday_timestamp, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
 
         # Employee has no reminder scheduled, let's fix it
         if employee.scheduled_reminder is None:
-            employee.scheduled_reminder = time.strftime("%d-%m-%Y %H:%M:%S", birthday_timestamp)
+            employee.scheduled_reminder = time.strftime(REMINDER_TSTAMP_FORMAT, new_scheduled_reminder)
             logger.info(f"{employee.full_name} ({employee.tg_id}) - reminder set to {employee.scheduled_reminder}")
             return False
 
         # Checking scheduled notification time to see if we should do anything
-        scheduled_reminder_unix = time.strptime(employee.scheduled_reminder, "%d-%m-%Y %H:%M:%S")
+        scheduled_reminder_unix = time.strptime(employee.scheduled_reminder, REMINDER_TSTAMP_FORMAT)
         due_state = cls.isNotificationDue(scheduled_reminder_unix, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
 
         # Too early, nothing to do
@@ -99,7 +100,7 @@ class DistributionService:
 
         # We either got it in time or too late,
         # let's schedule the next notification
-        employee.scheduled_reminder = time.strftime("%d-%m-%Y %H:%M:%S", new_scheduled_reminder)
+        employee.scheduled_reminder = time.strftime(REMINDER_TSTAMP_FORMAT, new_scheduled_reminder)
         employee.save()
 
         logger.info(f"{employee.full_name} ({employee.tg_id}) - reminder set to {employee.scheduled_reminder}")

@@ -14,7 +14,7 @@ Do not modify this file, configure variables in your
 environment instead.
 """
 
-### SYSTEM AND ADMINISTRATION ###
+# SYSTEM AND ADMINISTRATION
 
 # BOT_TOKEN - Your Telegram bot token (Avaiable from @BotFather)
 #    (Example: 1234567890:ABCDefghijk)
@@ -28,7 +28,17 @@ DATABASE = getenv("DATABASE") or "database.db"
 #    (Example: 1234567890,1234567891,1234567892)
 ADMINS = list((getenv("ADMINS") or "").split(","))
 
-### CUSTOMIZATION ###
+#CUSTOMIZATION
+
+# BIRTHDAY_TSTAMP_FORMAT - Format of the birthday timestamp.
+# Used to store employees' birthdays.
+#    (Default: %d-%m-%Y)
+BIRTHDAY_TSTAMP_FORMAT = getenv("BIRTHDAY_TSTAMP_FORMAT") or "%d-%m-%Y"
+
+# REMINDER_TSTAMP_FORMAT - Format of the reminder timestamp.
+# Used to store employees' birthday notifications and reminders.
+#    (Default: %d-%m-%Y %H:%M:%S)
+REMINDER_TSTAMP_FORMAT = getenv("REMINDER_TSTAMP_FORMAT") or "%d-%m-%Y %H:%M:%S"
 
 # BIRTHDAY_NOTIFICATION_DAY_OFFSET - Offset in days for birthday reminder.
 # Notifications for the birthday will be sent N days before it happens.
