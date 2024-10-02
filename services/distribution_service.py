@@ -8,11 +8,12 @@ from database.controllers.employee_controller import EmployeeController
 
 logger = logging.getLogger(__name__)
 
+
 class DistributionService:
 
     year_seconds = 31556952
     day_seconds = 86400
-    
+
     @classmethod
     def calculateNotificaionTime(cls, birth_date, reminder_day_offset):
         """
@@ -29,7 +30,7 @@ class DistributionService:
         extra_years = 1 if stripped_reminder_date < stripped_date_now else 0
 
         return (current_year + extra_years) * cls.year_seconds + stripped_reminder_date
-    
+
     @classmethod
     def isNotificationDue(cls, target_date, reminder_day_offset):
         """
@@ -51,14 +52,15 @@ class DistributionService:
             return 1  # On time
         else:
             return 0  # Early
-        
+
     # FIXME: This function should utilize datetimes for it in order to be
     # possible to save reminders in the database (it uses timestamps afterall).
     # For now does not function at all
     @classmethod
     async def employeeBirthdayNotification(cls, employee):
         """
-        Sends a notification to the employee
+        Sends a notification to the employee if time is due
+        and schedules the next notification.
 
         employee - must be an Employee object
         """
@@ -73,7 +75,7 @@ class DistributionService:
 
             # Send notification in Telegram here
             # If sent successfully, update the reminder time
-            
+
             employee.scheduled_reminder = cls.calculateNotificaionTime(employee.birthday, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
             employee.save()
 
@@ -81,3 +83,13 @@ class DistributionService:
             employee.scheduled_reminder = cls.calculateNotificaionTime(employee.birthday, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
             employee.save()
 
+    @classmethod
+    async def employeeBirthdayNotificationById(cls, id):
+        """
+        Wrapper of employeeBirthdayNotification to be
+        used with the id of the employee.
+
+        id - id of Employee.
+        """
+        employee = await EmployeeController.getEmployeeById(id)
+        return await cls.employeeBirthdayNotification(employee)
