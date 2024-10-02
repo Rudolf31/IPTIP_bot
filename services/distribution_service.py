@@ -1,6 +1,5 @@
 import logging
 import time
-from datetime import date
 
 from config import BIRTHDAY_NOTIFICATION_DAY_OFFSET
 
@@ -65,18 +64,27 @@ class DistributionService:
         and schedules the next notification.
         Returns true if the notification was sent.
 
+        Assumes that the employee birthday is in the format
+        dd-mm-yyyy.
+        Uses dd-mm-yyyy hh:mm:ss for reminder time.
+
         employee - must be an Employee object
         """
+        # Since the birthday is in the format dd-mm-yyyy
+        birthday_timestamp = time.strptime(employee.birthday, "%d-%m-%Y")
+
         # Generated but will not necessarily be used
-        new_scheduled_reminder = cls.calculateNotificaionTime(employee.birthday, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
+        new_scheduled_reminder = cls.calculateNotificaionTime(birthday_timestamp, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
 
         # Employee has no reminder scheduled, let's fix it
         if employee.scheduled_reminder is None:
-            employee.scheduled_reminder = new_scheduled_reminder
+            employee.scheduled_reminder = time.strftime("%d-%m-%Y %H:%M:%S", birthday_timestamp)
             logger.info(f"{employee.full_name} ({employee.tg_id}) - reminder set to {employee.scheduled_reminder}")
             return False
 
-        due_state = cls.isNotificationDue(employee.scheduled_reminder, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
+        # Checking scheduled notification time to see if we should do anything
+        scheduled_reminder_unix = time.strptime(employee.scheduled_reminder, "%d-%m-%Y %H:%M:%S")
+        due_state = cls.isNotificationDue(scheduled_reminder_unix, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
 
         # Too early, nothing to do
         if due_state == 0:
@@ -91,7 +99,7 @@ class DistributionService:
 
         # We either got it in time or too late,
         # let's schedule the next notification
-        employee.scheduled_reminder = new_scheduled_reminder
+        employee.scheduled_reminder = time.strftime("%d-%m-%Y %H:%M:%S", new_scheduled_reminder)
         employee.save()
 
         logger.info(f"{employee.full_name} ({employee.tg_id}) - reminder set to {employee.scheduled_reminder}")
