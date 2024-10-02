@@ -14,7 +14,7 @@ class DistributionService:
     year_seconds = 31556952
     day_seconds = 86400
 
-    #TODO: find out what this function actually returns
+    # TODO: find out what this function actually returns
     # (God I hate Python)
     @classmethod
     def calculateNotificaionTime(cls, birth_date, reminder_day_offset) -> int:

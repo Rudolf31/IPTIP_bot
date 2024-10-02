@@ -28,7 +28,7 @@ DATABASE = getenv("DATABASE") or "database.db"
 #    (Example: 1234567890,1234567891,1234567892)
 ADMINS = list((getenv("ADMINS") or "").split(","))
 
-#CUSTOMIZATION
+# CUSTOMIZATION
 
 # BIRTHDAY_TSTAMP_FORMAT - Format of the birthday timestamp.
 # Used to store employees' birthdays.
