@@ -1,5 +1,3 @@
-from warnings import deprecated
-
 from database.application_context import AppContext
 from database.application_context import Subscriber, User
 
@@ -9,7 +7,6 @@ class SubscriberController():
     SubscriberController for database actions
     related to subscribers.
     """
-    @deprecated("Redundant object copying. Switch to addSubscriberFromUserId.")
     async def addSubscriberFromUser(user) -> Subscriber:
         """
         Addition of a new subscriber.
