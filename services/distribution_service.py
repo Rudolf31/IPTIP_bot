@@ -1,6 +1,8 @@
 import logging
 import time
+from datetime import date
 
+from config import BIRTHDAY_NOTIFICATION_DAY_OFFSET
 
 from database.controllers.employee_controller import EmployeeController
 
@@ -49,3 +51,33 @@ class DistributionService:
             return 1  # On time
         else:
             return 0  # Early
+        
+    # FIXME: This function should utilize datetimes for it in order to be
+    # possible to save reminders in the database (it uses timestamps afterall).
+    # For now does not function at all
+    @classmethod
+    async def employeeBirthdayNotification(cls, employee):
+        """
+        Sends a notification to the employee
+
+        employee - must be an Employee object
+        """
+        if employee.scheduled_reminder is None:
+            employee.scheduled_reminder = cls.calculateNotificaionTime(employee.birthday, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
+            logger.info(f"{employee.full_name} ({employee.tg_id}) - reminder set to {employee.scheduled_reminder}")
+            return
+
+        due_state = cls.isNotificationDue(employee.scheduled_reminder, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
+
+        if due_state == 1:
+
+            # Send notification in Telegram here
+            # If sent successfully, update the reminder time
+            
+            employee.scheduled_reminder = cls.calculateNotificaionTime(employee.birthday, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
+            employee.save()
+
+        if due_state == -1:
+            employee.scheduled_reminder = cls.calculateNotificaionTime(employee.birthday, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
+            employee.save()
+

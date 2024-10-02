@@ -14,6 +14,7 @@ Do not modify this file, configure variables in your
 environment instead.
 """
 
+### SYSTEM AND ADMINISTRATION ###
 
 # BOT_TOKEN - Your Telegram bot token (Avaiable from @BotFather)
 #    (Example: 1234567890:ABCDefghijk)
@@ -26,3 +27,10 @@ DATABASE = getenv("DATABASE") or "database.db"
 # ADMINS - List of admin Telegram IDs with complete access.
 #    (Example: 1234567890,1234567891,1234567892)
 ADMINS = list((getenv("ADMINS") or "").split(","))
+
+### CUSTOMIZATION ###
+
+# BIRTHDAY_NOTIFICATION_DAY_OFFSET - Offset in days for birthday reminder.
+# Notifications for the birthday will be sent N days before it happens.
+#    (Default: 3)
+BIRTHDAY_NOTIFICATION_DAY_OFFSET = getenv("BIRTHDAY_NOTIFICATION_DAY_OFFSET") or 3
