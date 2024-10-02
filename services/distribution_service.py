@@ -37,8 +37,7 @@ class DistributionService:
     def isNotificationDue(cls, target_date, reminder_day_offset) -> int:
         """
         Checks if the notification is due.
-        Returns true if the notification is due.
-        Returns false if early or late
+        Returns -1 if late, 1 if on time, 0 if early
 
         target_date - Birthday of the employee
         reminder_day_offset - Offset in days from the birthday.
@@ -55,9 +54,7 @@ class DistributionService:
         else:
             return 0  # Early
 
-    # FIXME: This function should utilize datetimes for it in order to be
-    # possible to save reminders in the database (it uses timestamps afterall).
-    # For now does not function at all
+    # TODO: heavy testing (pls halp)
     @classmethod
     async def employeeBirthdayNotification(cls, employee) -> bool:
         """
@@ -65,13 +62,9 @@ class DistributionService:
         and schedules the next notification.
         Returns true if the notification was sent.
 
-        Assumes that the employee birthday is in the format
-        dd-mm-yyyy.
-        Uses dd-mm-yyyy hh:mm:ss for reminder time.
-
         employee - must be an Employee object
         """
-        # Since the birthday is in the format dd-mm-yyyy
+        # Since the birthday is in a timestamp format
         birthday_timestamp = time.strptime(employee.birthday, BIRTHDAY_TSTAMP_FORMAT)
 
         # Generated but will not necessarily be used
