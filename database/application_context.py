@@ -34,6 +34,7 @@ class Employee(BaseModel):
     full_name = CharField(null=False)
     birthday = DateTimeField(null=False)
     tg_id = BigIntegerField(unique=True)  # Telegram id when available
+    scheduled_reminder = DateTimeField(null=True)  # Time of next reminder
 
 
 class Reminder(BaseModel):
