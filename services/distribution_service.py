@@ -8,48 +8,44 @@ logger = logging.getLogger(__name__)
 
 class DistributionService:
 
-    def calculateNotificaionTime(birth_date, reminder_day_offset):
+    year_seconds = 31556952
+    day_seconds = 86400
+    
+    @classmethod
+    def calculateNotificaionTime(cls, birth_date, reminder_day_offset):
         """
         Calculates the time of the next notification.
 
-        birth_date - Birthday of the employee.
+        birth_date - Birthday of the employee
         reminder_day_offset - Offset in days from the birthday.
         """
-        year_seconds = 31556952
-        day_seconds = 86400
-
         current_year = time.localtime().tm_year  # 2024
-        stripped_reminder_date = (birth_date - reminder_day_offset * day_seconds) % year_seconds  # 01.08.____
-        stripped_date_now = time.time() % year_seconds  # 01.02.____
+        stripped_reminder_date = (birth_date - reminder_day_offset * cls.day_seconds) % cls.year_seconds  # 01.08.____
+        stripped_date_now = time.time() % cls.year_seconds  # 01.02.____
 
         # If current stripped day is > stripped reminder date, then add 1 year
         extra_years = 1 if stripped_reminder_date < stripped_date_now else 0
 
-        return (current_year + extra_years) * year_seconds + stripped_reminder_date
+        return (current_year + extra_years) * cls.year_seconds + stripped_reminder_date
+    
+    @classmethod
+    def isNotificationDue(cls, target_date, reminder_day_offset):
+        """
+        Checks if the notification is due.
+        Returns true if the notification is due.
+        Returns false if early or late
 
-
-
-
-
-
-
-
-    # async def scheduleBirthdayNotification(employee):
-    #     if employee.scheduled_reminder is None:
-    #         birthdate = employee.birthday % 31556952
-    #         datenow = time.time() % 31556952
-
-    #         if birthdate < datenow:
-    #             current_year = time.localtime().tm_year
-    #             employee.scheduled_reminder = birthdate + (current_year + 1) * 31556952
-
-    #         else:
-    #             employee.scheduled_reminder = birthdate + current_year * 31556952
-
-    #         employee.scheduled_reminder -= 3 * 86400
-
-    #         await EmployeeController.updateEmployee(employee)
-    #     if  employee.scheduled_reminder <= time.time() + 3 * 86400 and employee.scheduled_reminder > time.time():
-    #         # Send birthday notification, update scheduled_reminder
-    #         pass
-    #     if  
+        target_date - Birthday of the employee
+        reminder_day_offset - Offset in days from the birthday.
+        """
+        # FIXME: I feel like we could do a cleaner implementation
+        # since it is not very clear what the integers mean in the
+        # return values. Something like enums would probably
+        # do better (WeirdCat 02.10.2024)
+        current_time = time.time()
+        if current_time > target_date + (reminder_day_offset * cls.day_seconds):
+            return -1  # Late
+        elif current_time > target_date:
+            return 1  # On time
+        else:
+            return 0  # Early
