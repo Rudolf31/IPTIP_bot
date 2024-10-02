@@ -30,8 +30,8 @@ class SubscriptionService:
 
         return await SubscriberController.getSubscriberByUserId(user.id) is not None
 
-    @staticmethod
-    async def setUserSubscriptionState(_cls, user_tg_id, state) -> bool:
+    @classmethod
+    async def setUserSubscriptionState(cls, user_tg_id, state) -> bool:
         """
         Sets the subscription state of the user.
         Returns true on success.
@@ -47,12 +47,12 @@ class SubscriptionService:
                              f"was not found in the database.")
             return False
 
-        old_state = await _cls.getUserSubscriptionState(user_tg_id)
+        old_state = await cls.getUserSubscriptionState(user_tg_id)
         if old_state == state:
             return True  # Nothing to do
 
         if state:
-            user = await SubscriberController.addSubscriberFromUser(user)
+            user = await SubscriberController.addSubscriberFromUserId(user.id)
         else:
             user = await SubscriberController.deleteSubscriberByUserId(user.id)
 
