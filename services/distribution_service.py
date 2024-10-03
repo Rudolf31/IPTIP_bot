@@ -62,6 +62,26 @@ class DistributionService:
         else:
             return 0  # Early
 
+    def timestampToUnix(timestamp, format) -> int:
+        """
+        Converts a timestamp sring in the given format
+        to unix timestamp (integer).
+
+        timestamp - timestamp string
+        format - timestamp format
+        """
+        return int(datetime.datetime.strptime(timestamp, format).timestamp())
+
+    def unixToTimestamp(unix, format) -> str:
+        """
+        Converts a unix timestamp (integer)
+        to a timestamp string in the given format.
+
+        unix - unix timestamp
+        format - timestamp format
+        """
+        return datetime.datetime.fromtimestamp(unix).strftime(format)
+
     @classmethod
     async def employeeBirthdayNotification(cls, employee) -> bool:
         """
@@ -71,7 +91,7 @@ class DistributionService:
 
         employee - must be an Employee object
         """
-        birthday_timestamp = int(datetime.datetime.strptime(employee.birthday, BIRTHDAY_TSTAMP_FORMAT).timestamp())
+        birthday_timestamp = cls.timestampToUnix(employee.birthday, BIRTHDAY_TSTAMP_FORMAT)
 
         # Generated but will not necessarily be used
         new_scheduled_reminder = cls.calculateNotificaionTime(birthday_timestamp, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
@@ -86,14 +106,14 @@ class DistributionService:
                 await cls.broadcastBirthdayNotification(employee)
                 logger.info(f"{employee.full_name} ({employee.tg_id}) - broadcasted notification")
 
-            employee.scheduled_reminder = datetime.datetime.fromtimestamp(new_scheduled_reminder).strftime(REMINDER_TSTAMP_FORMAT)
+            employee.scheduled_reminder = cls.unixToTimestamp(new_scheduled_reminder, REMINDER_TSTAMP_FORMAT)
             employee.save()
             logger.info(f"{employee.full_name} ({employee.tg_id}) - scheduled for {employee.scheduled_reminder}")
 
             return False
 
         # Checking scheduled notification time to see if we should do anything
-        scheduled_reminder_unix = int(datetime.datetime.strptime(employee.scheduled_reminder, REMINDER_TSTAMP_FORMAT).timestamp())
+        scheduled_reminder_unix = cls.timestampToUnix(employee.scheduled_reminder, REMINDER_TSTAMP_FORMAT)
         due_state = cls.isNotificationDue(scheduled_reminder_unix, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
 
         # Too early, nothing to do
@@ -108,7 +128,7 @@ class DistributionService:
 
         # We either got it in time or too late,
         # let's schedule the next notification
-        employee.scheduled_reminder = datetime.datetime.fromtimestamp(new_scheduled_reminder).strftime(REMINDER_TSTAMP_FORMAT)
+        employee.scheduled_reminder = cls.unixToTimestamp(new_scheduled_reminder, REMINDER_TSTAMP_FORMAT)
         employee.save()
 
         logger.info(f"{employee.full_name} ({employee.tg_id}) - reminder set to {employee.scheduled_reminder}")
