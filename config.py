@@ -30,6 +30,10 @@ ADMINS = list((getenv("ADMINS") or "").split(","))
 
 # CUSTOMIZATION
 
+# TIMEZONE - Your timezone.
+#    (Default: Europe/Moscow)
+TIMEZONE = getenv("TIMEZONE") or "Europe/Moscow"
+
 # BIRTHDAY_TSTAMP_FORMAT - Format of the birthday timestamp.
 # Used to store employees' birthdays.
 #    (Default: %d-%m-%Y)

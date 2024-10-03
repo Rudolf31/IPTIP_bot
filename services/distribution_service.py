@@ -2,8 +2,7 @@ import logging
 import time
 import datetime
 
-from config import ENVIRONMENT
-from config import BIRTHDAY_NOTIFICATION_DAY_OFFSET
+from config import TIMEZONE, BIRTHDAY_NOTIFICATION_DAY_OFFSET
 from config import BIRTHDAY_TSTAMP_FORMAT, REMINDER_TSTAMP_FORMAT
 
 from database.controllers.employee_controller import EmployeeController
@@ -66,30 +65,27 @@ class DistributionService:
 
         employee - must be an Employee object
         """
-        # Since the birthday is in a timestamp format
-        # birthday_timestamp = int(time.mktime(time.strptime(employee.birthday, BIRTHDAY_TSTAMP_FORMAT)))
         birthday_timestamp = int(datetime.datetime.strptime(employee.birthday, BIRTHDAY_TSTAMP_FORMAT).timestamp())
 
         # Generated but will not necessarily be used
         new_scheduled_reminder = cls.calculateNotificaionTime(birthday_timestamp, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
 
         # Employee has no reminder scheduled, let's fix it
-        # TODO the algorithm should be further thought over and preferably optimized
+        # TODO: the algorithm should be further thought over and preferably optimized
         if employee.scheduled_reminder is None:
             reminder_without_offset = cls.calculateNotificaionTime(birthday_timestamp, 0)
 
             if time.time() < reminder_without_offset and time.time() > (new_scheduled_reminder - cls.year_seconds):
-                logger.info(f"{employee.full_name} ({employee.tg_id}) - birthday notifications supposed to be sent")
                 # TODO we need to send the notification here
+                logger.info(f"{employee.full_name} ({employee.tg_id}) - birthday notifications supposed to be sent")
 
             employee.scheduled_reminder = datetime.datetime.fromtimestamp(new_scheduled_reminder).strftime(REMINDER_TSTAMP_FORMAT)
             logger.info(f"{employee.full_name} ({employee.tg_id}) - reminder set to {employee.scheduled_reminder}")
             employee.save()
-            #FIXME: here we should also check if the notification was sent, thats why return here is a mistake
+            # FIXME: here we should also check if the notification was sent, thats why return here is a mistake
             return False
 
         # Checking scheduled notification time to see if we should do anything
-        # scheduled_reminder_unix = int(time.mktime(time.strptime(employee.scheduled_reminder, REMINDER_TSTAMP_FORMAT)))
         scheduled_reminder_unix = int(datetime.datetime.strptime(employee.scheduled_reminder, REMINDER_TSTAMP_FORMAT).timestamp())
         due_state = cls.isNotificationDue(scheduled_reminder_unix, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
 
