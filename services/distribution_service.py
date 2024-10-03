@@ -4,7 +4,7 @@ import datetime
 import asyncio
 
 from config import TOKEN
-from config import TIMEZONE, BIRTHDAY_NOTIFICATION_DAY_OFFSET
+from config import BIRTHDAY_NOTIFICATION_DAY_OFFSET
 from config import BIRTHDAY_TSTAMP_FORMAT, REMINDER_TSTAMP_FORMAT
 
 from database.controllers.employee_controller import EmployeeController
@@ -24,8 +24,7 @@ class DistributionService:
     bot = Bot(
         token=TOKEN,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
-    )   
-
+    )
 
     # TODO: find out what this function actually returns
     # (God I hate Python)
@@ -37,9 +36,9 @@ class DistributionService:
         birth_date - Birthday of the employee
         reminder_day_offset - Offset in days from the birthday.
         """
-        current_year = time.localtime().tm_year - 1970  # 2024
-        stripped_reminder_date = (birth_date - reminder_day_offset * cls.day_seconds) % cls.year_seconds  # 01.08.____
-        stripped_date_now = time.time() % cls.year_seconds  # 01.02.____
+        current_year = time.localtime().tm_year - 1970
+        stripped_reminder_date = (birth_date - reminder_day_offset * cls.day_seconds) % cls.year_seconds
+        stripped_date_now = time.time() % cls.year_seconds
 
         # If current stripped day is > stripped reminder date, then add 1 year
         extra_years = 1 if stripped_reminder_date < stripped_date_now else 0
@@ -55,10 +54,6 @@ class DistributionService:
         target_date - Birthday of the employee
         reminder_day_offset - Offset in days from the birthday.
         """
-        # FIXME: I feel like we could do a cleaner implementation
-        # since it is not very clear what the integers mean in the
-        # return values. Something like enums would probably
-        # do better (WeirdCat 02.10.2024)
         current_time = time.time()
         if current_time > target_date + (reminder_day_offset * cls.day_seconds):
             return -1  # Late
@@ -67,7 +62,6 @@ class DistributionService:
         else:
             return 0  # Early
 
-    # TODO: heavy testing (pls halp)
     @classmethod
     async def employeeBirthdayNotification(cls, employee) -> bool:
         """
@@ -83,18 +77,19 @@ class DistributionService:
         new_scheduled_reminder = cls.calculateNotificaionTime(birthday_timestamp, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
 
         # Employee has no reminder scheduled, let's fix it
-        # TODO: the algorithm should be further thought over and preferably optimized
         if employee.scheduled_reminder is None:
             reminder_without_offset = cls.calculateNotificaionTime(birthday_timestamp, 0)
 
             if time.time() < reminder_without_offset and time.time() > (new_scheduled_reminder - cls.year_seconds):
-                # TODO we need to send the notification here
+
+                logger.info(f"{employee.full_name} ({employee.tg_id}) - broadcasting...")
                 await cls.broadcastBirthdayNotification(employee)
-                logger.info(f"{employee.full_name} ({employee.tg_id}) - birthday notifications supposed to be sent")
+                logger.info(f"{employee.full_name} ({employee.tg_id}) - broadcasted notification")
 
             employee.scheduled_reminder = datetime.datetime.fromtimestamp(new_scheduled_reminder).strftime(REMINDER_TSTAMP_FORMAT)
-            logger.info(f"{employee.full_name} ({employee.tg_id}) - reminder set to {employee.scheduled_reminder}")
             employee.save()
+            logger.info(f"{employee.full_name} ({employee.tg_id}) - scheduled for {employee.scheduled_reminder}")
+
             return False
 
         # Checking scheduled notification time to see if we should do anything
@@ -108,7 +103,6 @@ class DistributionService:
 
         # Time to send the notification
         if due_state == 1:
-
             await cls.broadcastBirthdayNotification(employee)
             logger.info(f"{employee.full_name} ({employee.tg_id}) - birthday notifications supposed to be sent")
 
@@ -141,13 +135,17 @@ class DistributionService:
         employee - must be an Employee object
         """
         subscribers = await SubscriberController.getSubscriberUsers()
-        # Создаем список задач для отправки сообщений
+
+        # List of task to be run in parallel
         tasks = [
-            cls.bot.send_message(chat_id=subscriber.tg_id, text=f"{employee.full_name} have a birthday on {employee.birthday} ")
+            cls.bot.send_message(
+                chat_id=subscriber.tg_id,
+                text=f"{employee.full_name} is having a birthday on {employee.birthday}")
             for subscriber in subscribers
         ]
 
-        # Запускаем все задачи параллельно
+        # Running the tasks
         await asyncio.gather(*tasks)
 
         return True
+
