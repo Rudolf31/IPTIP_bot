@@ -15,6 +15,11 @@ from services.distribution_service import DistributionService
 # All handlers should be attached to the Router (or Dispatcher)
 dp = Dispatcher()
 
+bot = Bot(
+    token=TOKEN,
+    default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+)
+
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
@@ -26,7 +31,7 @@ async def command_start_handler(message: Message) -> None:
 
     await message.answer(f"Hello, {html.bold(message.from_user.full_name)}!")
 
-    
+
 @dp.message(Command("test"))
 async def Answer(message: Message) -> None:
     await DistributionService.employeeBirthdayNotificationById(1)
@@ -44,13 +49,14 @@ async def set_user_subscription_state(message: Message) -> None:
 async def set_user_subscription_state(message: Message) -> None:
     success = await SubscriptionService.setUserSubscriptionState(message.from_user.id, state=False)
     await message.answer(f"Unsubscribed: {success}")
-    
+
 
 @dp.message(Command("employees"))
 async def get_employees_handler(message: Message) -> None:
     employees_list = await EmployeeService.getEmployeeList()
     formatted_list = "\n".join(employees_list)
     await message.answer(formatted_list)
+
 
 @dp.message()
 async def echo_handler(message: Message) -> None:
@@ -67,11 +73,7 @@ async def echo_handler(message: Message) -> None:
 
 
 async def run_bot() -> None:
-    # Initialize Bot instance with default bot properties
-    bot = Bot(
-        token=TOKEN,
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML)
-    )
+    global bot
 
     # And the run events dispatching
     await dp.start_polling(bot)
