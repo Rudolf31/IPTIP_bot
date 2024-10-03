@@ -1,11 +1,18 @@
 import logging
 import time
 import datetime
+import asyncio
 
+from config import TOKEN
 from config import TIMEZONE, BIRTHDAY_NOTIFICATION_DAY_OFFSET
 from config import BIRTHDAY_TSTAMP_FORMAT, REMINDER_TSTAMP_FORMAT
 
 from database.controllers.employee_controller import EmployeeController
+from database.controllers.subscriber_controller import SubscriberController
+
+from aiogram import Bot
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +21,11 @@ class DistributionService:
 
     year_seconds = 31556952
     day_seconds = 86400
+    bot = Bot(
+        token=TOKEN,
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+    )   
+
 
     # TODO: find out what this function actually returns
     # (God I hate Python)
@@ -77,12 +89,12 @@ class DistributionService:
 
             if time.time() < reminder_without_offset and time.time() > (new_scheduled_reminder - cls.year_seconds):
                 # TODO we need to send the notification here
+                await cls.broadcastBirthdayNotification(employee)
                 logger.info(f"{employee.full_name} ({employee.tg_id}) - birthday notifications supposed to be sent")
 
             employee.scheduled_reminder = datetime.datetime.fromtimestamp(new_scheduled_reminder).strftime(REMINDER_TSTAMP_FORMAT)
             logger.info(f"{employee.full_name} ({employee.tg_id}) - reminder set to {employee.scheduled_reminder}")
             employee.save()
-            # FIXME: here we should also check if the notification was sent, thats why return here is a mistake
             return False
 
         # Checking scheduled notification time to see if we should do anything
@@ -97,8 +109,7 @@ class DistributionService:
         # Time to send the notification
         if due_state == 1:
 
-            # Send notification in Telegram here
-            # If not sent successfully, throw error
+            await cls.broadcastBirthdayNotification(employee)
             logger.info(f"{employee.full_name} ({employee.tg_id}) - birthday notifications supposed to be sent")
 
         # We either got it in time or too late,
@@ -120,3 +131,23 @@ class DistributionService:
         """
         employee = await EmployeeController.getEmployeeById(id)
         return await cls.employeeBirthdayNotification(employee)
+
+    @classmethod
+    async def broadcastBirthdayNotification(cls, employee) -> bool:
+        """
+        Sends notifications to all subscribers.
+        Returns true if the notification was sent.
+
+        employee - must be an Employee object
+        """
+        subscribers = await SubscriberController.getSubscriberUsers()
+        # Создаем список задач для отправки сообщений
+        tasks = [
+            cls.bot.send_message(chat_id=subscriber.tg_id, text=f"{employee.full_name} have a birthday on {employee.birthday} ")
+            for subscriber in subscribers
+        ]
+
+        # Запускаем все задачи параллельно
+        await asyncio.gather(*tasks)
+
+        return True

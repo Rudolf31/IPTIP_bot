@@ -80,14 +80,26 @@ class SubscriberController():
                         .where(User.tg_id == user_tg_id)
                         .get_or_none())
 
-    async def getSubscribers() -> list:
+    async def getSubscribers():
         """
         Returns all subscribers from the database.
         """
         async with AppContext() as database:
             with database.atomic():
 
-                return list(Subscriber.select())
+                return Subscriber.select()
+
+    async def getSubscriberUsers():
+        """
+        Returns all subscriber - users from the database.
+        """
+        async with AppContext() as database:
+            with database.atomic():
+                # Получаем подписчиков с присоединенными пользователями
+                return (User
+                        .select()
+                        .join(Subscriber)
+                        .where(Subscriber.user == User.id))
 
     async def deleteSubscriberById(id) -> bool:
         """

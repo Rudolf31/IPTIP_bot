@@ -10,6 +10,7 @@ from services.user_service import UserService
 from services.employee_service import EmployeeService
 from services.subscription_service import SubscriptionService
 from services.distribution_service import DistributionService
+from database.controllers.employee_controller import EmployeeController
 
 
 # All handlers should be attached to the Router (or Dispatcher)
@@ -34,9 +35,9 @@ async def command_start_handler(message: Message) -> None:
 
 @dp.message(Command("test"))
 async def Answer(message: Message) -> None:
-    await DistributionService.employeeBirthdayNotificationById(1)
-    await DistributionService.employeeBirthdayNotificationById(2)
-    #  await DistributionService.employeeBirthdayNotificationById(3)
+    Shamin = await EmployeeController.getEmployeeByTgId(666)
+
+    await DistributionService.broadcastBirthdayNotification(Shamin)
 
 
 @dp.message(Command("subscribe"))
