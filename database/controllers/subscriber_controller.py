@@ -89,13 +89,12 @@ class SubscriberController():
 
                 return Subscriber.select()
 
-    async def getSubscriberUsers():
+    async def getSubscribedUsers():
         """
-        Returns all subscriber - users from the database.
+        Returns all users that are subscribed.
         """
         async with AppContext() as database:
             with database.atomic():
-                # Получаем подписчиков с присоединенными пользователями
                 return (User
                         .select()
                         .join(Subscriber)

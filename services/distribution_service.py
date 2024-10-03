@@ -134,7 +134,7 @@ class DistributionService:
 
         employee - must be an Employee object
         """
-        subscribers = await SubscriberController.getSubscriberUsers()
+        subscribers = await SubscriberController.getSubscribedUsers()
 
         # List of task to be run in parallel
         tasks = [
