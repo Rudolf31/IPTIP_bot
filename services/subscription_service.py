@@ -23,7 +23,7 @@ class SubscriptionService:
         user = await UserController.getUserByTgId(user_tg_id)
 
         if not user:
-            logger.warn(f"Failed to get subscription state for "
+            logger.warning(f"Failed to get subscription state for "
                         f"Telegram user {user_tg_id} since it "
                         f"was not found in the database.")
             return False
