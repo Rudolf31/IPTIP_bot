@@ -27,7 +27,7 @@ class DistributionService:
         reminder_day_offset - Offset in days from the birthday.
         """
         current_year = time.localtime().tm_year - 1970  # 2024
-    stripped_reminder_date = (birth_date - reminder_day_offset * cls.day_seconds) % cls.year_seconds  # 01.08.____
+        stripped_reminder_date = (birth_date - reminder_day_offset * cls.day_seconds) % cls.year_seconds  # 01.08.____
         stripped_date_now = time.time() % cls.year_seconds  # 01.02.____
 
         # If current stripped day is > stripped reminder date, then add 1 year
