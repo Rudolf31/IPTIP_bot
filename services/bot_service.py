@@ -28,6 +28,8 @@ async def command_start_handler(message: Message) -> None:
 
 @dp.message(Command("test"))
 async def Answer(message: Message) -> None:
+    await DistributionService.employeeBirthdayNotificationById(1)
+    await DistributionService.employeeBirthdayNotificationById(2)
     await DistributionService.employeeBirthdayNotificationById(3)
 
 

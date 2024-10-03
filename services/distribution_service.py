@@ -26,11 +26,8 @@ class DistributionService:
         reminder_day_offset - Offset in days from the birthday.
         """
         current_year = time.localtime().tm_year - 1970  # 2024
-        print(current_year)
         stripped_reminder_date = (birth_date - reminder_day_offset * cls.day_seconds) % cls.year_seconds  # 01.08.____
-        print(stripped_reminder_date)
-        stripped_date_now = time.time() % cls.year_seconds  # 01.02.____
-        print(stripped_date_now)
+        stripped_date_now = time.time() % cls.year_seconds  # 01.02.____w)
 
         # If current stripped day is > stripped reminder date, then add 1 year
         extra_years = 1 if stripped_reminder_date < stripped_date_now else 0
@@ -75,11 +72,19 @@ class DistributionService:
         new_scheduled_reminder = cls.calculateNotificaionTime(birthday_timestamp, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
 
         # Employee has no reminder scheduled, let's fix it
+        # TODO the algorithm should be further thought over and preferably optimized
         if employee.scheduled_reminder is None:
+            reminder_without_transposition = cls.calculateNotificaionTime(birthday_timestamp, 0)
+
+            if time.time() < reminder_without_transposition and time.time() > (new_scheduled_reminder - cls.year_seconds):
+                logger.info(f"{employee.full_name} ({employee.tg_id}) - birthday notifications supposed to be sent")
+                # TODO we need to send the notification here
+
             employee.scheduled_reminder = datetime.datetime.fromtimestamp(new_scheduled_reminder).strftime(REMINDER_TSTAMP_FORMAT)
             logger.info(f"{employee.full_name} ({employee.tg_id}) - reminder set to {employee.scheduled_reminder}")
-            #FIXME: save employee
-            return False
+            employee.save()
+            #FIXME: here we should also check if the notification was sent, thats why return here is a mistake
+            
 
         # Checking scheduled notification time to see if we should do anything
         scheduled_reminder_unix = int(time.mktime(time.strptime(employee.scheduled_reminder, REMINDER_TSTAMP_FORMAT)))
@@ -87,6 +92,7 @@ class DistributionService:
 
         # Too early, nothing to do
         if due_state == 0:
+            
             return False
 
         # Time to send the notification
