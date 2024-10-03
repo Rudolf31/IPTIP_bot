@@ -26,7 +26,7 @@ DATABASE = getenv("DATABASE") or "database.db"
 
 # ADMINS - List of admin Telegram IDs with complete access.
 #    (Example: 1234567890,1234567891,1234567892)
-ADMINS = list((getenv("ADMINS") or "").split(","))
+ADMINS = [int(admin_id) for admin_id in list((getenv("ADMINS") or "").split(","))]
 
 # CUSTOMIZATION
 
