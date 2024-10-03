@@ -44,3 +44,9 @@ REMINDER_TSTAMP_FORMAT = getenv("REMINDER_TSTAMP_FORMAT") or "%d-%m-%Y %H:%M:%S"
 # Notifications for the birthday will be sent N days before it happens.
 #    (Default: 3)
 BIRTHDAY_NOTIFICATION_DAY_OFFSET = getenv("BIRTHDAY_NOTIFICATION_DAY_OFFSET") or 3
+
+# DEVELOPMENT
+
+# ENVIRONMENT - Type of environment (production/debug)
+#    (Default: production)
+ENVIRONMENT = getenv("ENVIRONMENT") or "production"

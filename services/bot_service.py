@@ -26,10 +26,11 @@ async def command_start_handler(message: Message) -> None:
 
     await message.answer(f"Hello, {html.bold(message.from_user.full_name)}!")
 
+    
 @dp.message(Command("test"))
 async def Answer(message: Message) -> None:
+    await DistributionService.employeeBirthdayNotificationById(1)
     await DistributionService.employeeBirthdayNotificationById(2)
-    await DistributionService.employeeBirthdayNotificationById(4)
     #  await DistributionService.employeeBirthdayNotificationById(3)
 
 

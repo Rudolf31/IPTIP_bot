@@ -2,6 +2,7 @@ import logging
 import time
 import datetime
 
+from config import ENVIRONMENT
 from config import BIRTHDAY_NOTIFICATION_DAY_OFFSET
 from config import BIRTHDAY_TSTAMP_FORMAT, REMINDER_TSTAMP_FORMAT
 
@@ -26,7 +27,7 @@ class DistributionService:
         reminder_day_offset - Offset in days from the birthday.
         """
         current_year = time.localtime().tm_year - 1970  # 2024
-        stripped_reminder_date = (birth_date - reminder_day_offset * cls.day_seconds) % cls.year_seconds  # 01.08.____
+    stripped_reminder_date = (birth_date - reminder_day_offset * cls.day_seconds) % cls.year_seconds  # 01.08.____
         stripped_date_now = time.time() % cls.year_seconds  # 01.02.____
 
         # If current stripped day is > stripped reminder date, then add 1 year
@@ -66,7 +67,8 @@ class DistributionService:
         employee - must be an Employee object
         """
         # Since the birthday is in a timestamp format
-        birthday_timestamp = int(time.mktime(time.strptime(employee.birthday, BIRTHDAY_TSTAMP_FORMAT)))
+        # birthday_timestamp = int(time.mktime(time.strptime(employee.birthday, BIRTHDAY_TSTAMP_FORMAT)))
+        birthday_timestamp = int(datetime.datetime.strptime(employee.birthday, BIRTHDAY_TSTAMP_FORMAT).timestamp())
 
         # Generated but will not necessarily be used
         new_scheduled_reminder = cls.calculateNotificaionTime(birthday_timestamp, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
@@ -87,12 +89,13 @@ class DistributionService:
             return False
 
         # Checking scheduled notification time to see if we should do anything
-        scheduled_reminder_unix = int(time.mktime(time.strptime(employee.scheduled_reminder, REMINDER_TSTAMP_FORMAT)))
+        # scheduled_reminder_unix = int(time.mktime(time.strptime(employee.scheduled_reminder, REMINDER_TSTAMP_FORMAT)))
+        scheduled_reminder_unix = int(datetime.datetime.strptime(employee.scheduled_reminder, REMINDER_TSTAMP_FORMAT).timestamp())
         due_state = cls.isNotificationDue(scheduled_reminder_unix, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
 
         # Too early, nothing to do
         if due_state == 0:
-            
+            logger.info(f"{employee.full_name} ({employee.tg_id}) - nothing to do")
             return False
 
         # Time to send the notification
