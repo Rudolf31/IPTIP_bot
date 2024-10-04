@@ -69,6 +69,7 @@ class AppContext:
     _db = None
 
     def __init__(self):
+
         self._db = SqliteDatabase(DATABASE)
 
     async def __aenter__(self) -> SqliteDatabase:
