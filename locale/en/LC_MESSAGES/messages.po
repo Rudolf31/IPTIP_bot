@@ -1,14 +1,14 @@
-msgid "Hello, {name}! This bot serves notifications for birthdays of employees in the Department of Industrial Programming. To get started, use the /subscribe command to further be notified about your coworkers' birthdays in advance."
+msgid "start"
 msgstr "Hello, {name}! This bot serves notifications for birthdays of employees in the Department of Industrial Programming. To get started, use the /subscribe command to further be notified about your coworkers' birthdays in advance."
 
-msgid "You have successfully subscribed!"
+msgid "subscribe"
 msgstr "You have successfully subscribed!"
 
-msgid "You have successfully unsubscribed!"
+msgid "unsubscribe"
 msgstr "You have successfully unsubscribed!"
 
-msgid "{employee} is having a birthday on {date}"
+msgid "birthdayNotification"
 msgstr "{employee} is having a birthday on {date}"
 
-msgid "Here's the full list of employees:"
+msgid "employees"
 msgstr "Here's the full list of employees:"

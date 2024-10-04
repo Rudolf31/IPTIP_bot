@@ -1,14 +1,14 @@
-msgid "Hello, {name}! I serve notifications for birthdays of employees in the Department of Industrial Programming. To get started, use the /subscribe command to further be notified about your coworkers' birthdays in advance."
+msgid "start"
 msgstr "Здравствуйте, {name}! Я предоставляю оповещения о днях рождения сотрудников, работающих на кафедре индустриального программирования. Отправьте мне команду /subscribe, чтобы в дальнейшем заранее получать уведомления о днях рождения ваших коллег."
 
-msgid "You have successfully subscribed!"
+msgid "subscribe"
 msgstr "Вы успешно подписались!"
 
-msgid "You have successfully unsubscribed!"
+msgid "unsubscribe"
 msgstr "Вы успешно отказались от рассылки!"
 
-msgid "{employee} is having a birthday on {date}"
+msgid "birthdayNotification"
 msgstr "{employee} скоро отмечает день рождения ({date})!"
 
-msgid "Here's the full list of employees:"
+msgid "employees"
 msgstr "Вот полный список сотрудников:"
