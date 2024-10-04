@@ -4,7 +4,7 @@
 A corporate Telegram bot which serves birthday reminders to your employees or coworkers. 
 
 # Roadmap
-- [ ] Automatic birthday reminders
+- [x] Automatic birthday reminders
 - [ ] Extra birthday reminders (manually requested)
 - [ ] Omitting reminders of your own birthday
 - [ ] Admin features (maintaining the employee list)
