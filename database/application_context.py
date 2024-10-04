@@ -70,9 +70,6 @@ class AppContext:
 
     def __init__(self):
 
-        if not sqlite_db.exists():
-            sqlite_db.create_file()
-
         self._db = SqliteDatabase(DATABASE)
 
     async def __aenter__(self) -> SqliteDatabase:
