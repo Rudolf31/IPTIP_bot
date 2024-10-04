@@ -69,7 +69,7 @@ async def Answer(message: Message, command: CommandObject) -> None:
 
     await message.answer("Unknown test.")
     return
-   
+
 
 @dp.message(Command("subscribe"))
 async def set_user_subscription_state(message: Message) -> None:

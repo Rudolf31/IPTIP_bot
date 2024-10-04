@@ -21,6 +21,8 @@ class DistributionService:
 
     year_seconds = 31556952
     day_seconds = 86400
+    hour_seconds = 3600
+    minute_seconds = 60
     bot = Bot(
         token=TOKEN,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
@@ -46,12 +48,12 @@ class DistributionService:
         return (current_year + extra_years) * cls.year_seconds + stripped_reminder_date
 
     @classmethod
-    def doesTimestampFitPeriod(cls, date, day_offset) -> bool:
+    def currentTimeFitsPeriod(cls, date, day_offset) -> bool:
         """
-        Checks if the given timestamp is in the given period.
+        Checks if the current time is in the given period.
 
-        date - Birthday of the employee
-        day_offset - Offset in days from the birthday.
+        date - The target date
+        day_offset - Offset in days from the date.
         """
         current_year = (time.localtime().tm_year - 1970) * cls.year_seconds
         stripped_date = date % cls.year_seconds + current_year
@@ -95,7 +97,7 @@ class DistributionService:
         return datetime.datetime.fromtimestamp(unix).strftime(format)
 
     @classmethod
-    async def employeeBirthdayNotification(cls, employee) -> bool:
+    async def handleEmployeeSchedule(cls, employee) -> bool:
         """
         Sends a notification to the employee if time is due
         and schedules the next notification.
@@ -111,11 +113,12 @@ class DistributionService:
         # Employee has no reminder scheduled, let's fix it
         if employee.scheduled_reminder is None:
 
-            if cls.doesTimestampFitPeriod(birthday_timestamp, BIRTHDAY_NOTIFICATION_DAY_OFFSET):
-
-                logger.info(f"{employee.full_name} ({employee.tg_id}) - broadcasting...")
+            # Sometimes an employee's birthday is inside the notification
+            # period when the reminder is not yet scheduled, resulting
+            # in a reminder being scheduled for the next year. That's why
+            # we need to intervene and send the notification right away.
+            if cls.currentTimeFitsPeriod(birthday_timestamp, BIRTHDAY_NOTIFICATION_DAY_OFFSET):
                 await cls.broadcastBirthdayNotification(employee)
-                logger.info(f"{employee.full_name} ({employee.tg_id}) - broadcasted notification")
 
             employee.scheduled_reminder = cls.unixToTimestamp(new_scheduled_reminder, REMINDER_TSTAMP_FORMAT)
             employee.save()
@@ -135,7 +138,6 @@ class DistributionService:
         # Time to send the notification
         if due_state == 1:
             await cls.broadcastBirthdayNotification(employee)
-            logger.info(f"{employee.full_name} ({employee.tg_id}) - birthday notifications supposed to be sent")
 
         # We either got it in time or too late,
         # let's schedule the next notification
@@ -147,7 +149,7 @@ class DistributionService:
         return False
 
     @classmethod
-    async def employeeBirthdayNotificationById(cls, id) -> bool:
+    async def handleEmployeeScheduleById(cls, id) -> bool:
         """
         Wrapper of employeeBirthdayNotification to be
         used with the id of the employee.
@@ -155,7 +157,7 @@ class DistributionService:
         id - id of Employee.
         """
         employee = await EmployeeController.getEmployeeById(id)
-        return await cls.employeeBirthdayNotification(employee)
+        return await cls.handleEmployeeSchedule(employee)
 
     @classmethod
     async def broadcastBirthdayNotification(cls, employee) -> bool:
@@ -165,7 +167,10 @@ class DistributionService:
 
         employee - must be an Employee object
         """
+        # Gathers subscribers to be able to notify them
         subscribers = await SubscriberController.getSubscribedUsers()
+
+        logger.info(f"{employee.full_name} ({employee.tg_id}) - broadcasting notification...")
 
         # List of task to be run in parallel
         tasks = [
@@ -177,18 +182,28 @@ class DistributionService:
 
         # Running the tasks
         await asyncio.gather(*tasks)
+        logger.info(f"{employee.full_name} ({employee.tg_id}) - finished broadcasting.")
 
         return True
 
     @classmethod
-    async def birthdayCycle(cls) -> None:
+    async def birthdayCycle(cls, forever=False, interval=hour_seconds) -> None:
         """
         Handles birthday notifications at fixed periods of time.
         """
+
+        # Avoid overloading
+        if interval is None or interval < cls.minute_seconds:
+            raise ValueError("Cycle interval must be at least 1 minute.")
+
         while True:
             for employee in await EmployeeController.getEmployees():
-                try: 
-                    await cls.employeeBirthdayNotification(employee)
+                try:
+                    await cls.handleEmployeeSchedule(employee)
                 except Exception as e:
                     logger.exception(f"Failed to send birthday notification: {e}")
-            await asyncio.sleep(cls.day_seconds / 24)
+
+            if not forever:
+                break
+
+            await asyncio.sleep(interval)
