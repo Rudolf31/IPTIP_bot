@@ -46,6 +46,18 @@ class DistributionService:
         return (current_year + extra_years) * cls.year_seconds + stripped_reminder_date
 
     @classmethod
+    def doesTimestampFitPeriod(cls, date, day_offset) -> bool:
+        """
+        Checks if the given timestamp is in the given period.
+
+        date - Birthday of the employee
+        day_offset - Offset in days from the birthday.
+        """
+        current_year = (time.localtime().tm_year - 1970) * cls.year_seconds
+        stripped_date = date % cls.year_seconds + current_year
+        return (stripped_date - day_offset * cls.day_seconds) < time.time() and time.time() < stripped_date
+
+    @classmethod
     def isNotificationDue(cls, target_date, reminder_day_offset) -> int:
         """
         Checks if the notification is due.
@@ -98,9 +110,8 @@ class DistributionService:
 
         # Employee has no reminder scheduled, let's fix it
         if employee.scheduled_reminder is None:
-            reminder_without_offset = cls.calculateNotificaionTime(birthday_timestamp, 0)
 
-            if time.time() < reminder_without_offset and time.time() > (new_scheduled_reminder - cls.year_seconds):
+            if cls.doesTimestampFitPeriod(birthday_timestamp, BIRTHDAY_NOTIFICATION_DAY_OFFSET):
 
                 logger.info(f"{employee.full_name} ({employee.tg_id}) - broadcasting...")
                 await cls.broadcastBirthdayNotification(employee)

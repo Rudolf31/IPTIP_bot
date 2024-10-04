@@ -10,7 +10,6 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     asyncio.run(DistributionService.birthdayCycle())
     asyncio.run(run_bot())
-    
 
 
 if __name__ == "__main__":
