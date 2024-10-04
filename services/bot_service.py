@@ -12,6 +12,7 @@ from services.user_service import UserService
 from services.employee_service import EmployeeService
 from services.subscription_service import SubscriptionService
 from services.distribution_service import DistributionService
+from services.translation_service import TranslationService as TS
 from database.controllers.employee_controller import EmployeeController
 
 
@@ -25,6 +26,8 @@ bot = Bot(
     default=DefaultBotProperties(parse_mode=ParseMode.HTML)
 )
 
+locale_ru = TS.getTranslation("ru")
+
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
@@ -34,7 +37,8 @@ async def command_start_handler(message: Message) -> None:
     if not await UserService.isUserRegistered(message.from_user):
         await UserService.userRegister(message.from_user)
 
-    await message.answer(f"Hello, {html.bold(message.from_user.full_name)}!")
+    message_text = TS.getTemplate(locale_ru, "start")
+    await message.answer(message_text.format(name=f"{html.bold(message.from_user.full_name)}"))
 
 
 @dp.message(Command("test"))
@@ -44,7 +48,7 @@ async def Answer(message: Message, command: CommandObject) -> None:
     Only admin users are able to interact with it.
     Features are not meant to stay forever.
     """
-    if not message.from_user.id in ADMINS:
+    if message.from_user.id not in ADMINS:
         await message.answer("Only admins are allowed to run tests.")
         return
 
@@ -72,36 +76,28 @@ async def Answer(message: Message, command: CommandObject) -> None:
 
 
 @dp.message(Command("subscribe"))
-async def set_user_subscription_state(message: Message) -> None:
-    success = await SubscriptionService.setUserSubscriptionState(message.from_user.id, state=True)
-    await message.answer(f"Subscribed: {success}")
+async def subscribe_handler(message: Message) -> None:
+    await SubscriptionService.setUserSubscriptionState(message.from_user.id, state=True)
+
+    message_text = TS.getTemplate(locale_ru, "subscribe")
+    await message.answer(message_text)
 
 
 @dp.message(Command("unsubscribe"))
-async def set_user_subscription_state(message: Message) -> None:
-    success = await SubscriptionService.setUserSubscriptionState(message.from_user.id, state=False)
-    await message.answer(f"Unsubscribed: {success}")
+async def unsubscribe_handler(message: Message) -> None:
+    await SubscriptionService.setUserSubscriptionState(message.from_user.id, state=False)
+
+    message_text = TS.getTemplate(locale_ru, "unsubscribe")
+    await message.answer(message_text)
 
 
 @dp.message(Command("employees"))
 async def get_employees_handler(message: Message) -> None:
     employees_list = await EmployeeService.getEmployeeList()
     formatted_list = "\n".join(employees_list)
-    await message.answer(formatted_list)
 
-
-@dp.message()
-async def echo_handler(message: Message) -> None:
-    """
-    Handler will forward receive a message back to the sender
-    By default, message handler will handle all message types.
-    """
-    try:
-        # Send a copy of the received message
-        await message.send_copy(chat_id=message.chat.id)
-    except TypeError:
-        # But not all the types is supported to be copied so need to handle it
-        await message.answer("Nice try!")
+    message_text = TS.getTemplate(locale_ru, "employees")
+    await message.answer(f"{message_text}\n{formatted_list}")
 
 
 async def run_bot() -> None:
