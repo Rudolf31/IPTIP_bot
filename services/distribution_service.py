@@ -169,3 +169,15 @@ class DistributionService:
 
         return True
 
+    @classmethod
+    async def birthdayCycle(cls) -> None:
+        """
+        Handles birthday notifications at fixed periods of time.
+        """
+        while True:
+            for employee in await EmployeeController.getEmployees():
+                try: 
+                    await cls.employeeBirthdayNotification(employee)
+                except Exception as e:
+                    logger.exception(f"Failed to send birthday notification: {e}")
+            await asyncio.sleep(cls.day_seconds / 24)
