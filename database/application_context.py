@@ -1,4 +1,4 @@
-from peewee import SqliteDatabase
+from peewee import SqliteDatabase, SQL
 from peewee import Model, CharField, DateTimeField, BigIntegerField
 from peewee import AutoField, ForeignKeyField, BooleanField
 
@@ -46,7 +46,8 @@ class Reminder(BaseModel):
     user = ForeignKeyField(User, field='id', backref='user')
     employee = ForeignKeyField(Employee, field='id', backref='employee')
 
-    # TODO: make pair unique constraint for user and employee
+    class Meta:
+        constraints = [SQL('UNIQUE (user, employee)')]
 
 
 class Subscriber(BaseModel):
