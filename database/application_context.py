@@ -47,7 +47,9 @@ class Reminder(BaseModel):
     employee = ForeignKeyField(Employee, field='id', backref='employee')
 
     class Meta:
-        constraints = [SQL('UNIQUE (user, employee)')]
+        indexes = (
+            (("user", "employee"), True),
+        )
 
 
 class Subscriber(BaseModel):
