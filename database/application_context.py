@@ -1,4 +1,4 @@
-from peewee import SqliteDatabase
+from peewee import SqliteDatabase, SQL
 from peewee import Model, CharField, DateTimeField, BigIntegerField
 from peewee import AutoField, ForeignKeyField, BooleanField
 
@@ -33,7 +33,7 @@ class Employee(BaseModel):
     id = AutoField(primary_key=True)
     full_name = CharField(null=False)
     birthday = DateTimeField(null=False)
-    tg_id = BigIntegerField(unique=True)  # Telegram id when available
+    tg_id = BigIntegerField(unique=True, null=True)  # Telegram id when available
     scheduled_reminder = DateTimeField(null=True)  # Time of next reminder
 
 
@@ -46,7 +46,10 @@ class Reminder(BaseModel):
     user = ForeignKeyField(User, field='id', backref='user')
     employee = ForeignKeyField(Employee, field='id', backref='employee')
 
-    # TODO: make pair unique constraint for user and employee
+    class Meta:
+        indexes = (
+            (("user", "employee"), True),
+        )
 
 
 class Subscriber(BaseModel):
