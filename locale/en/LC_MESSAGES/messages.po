@@ -1,0 +1,14 @@
+msgid "start"
+msgstr "Hello, {name}! This bot serves notifications for birthdays of employees in the Department of Industrial Programming. To get started, use the /subscribe command to further be notified about your coworkers' birthdays in advance."
+
+msgid "subscribe"
+msgstr "You have successfully subscribed!"
+
+msgid "unsubscribe"
+msgstr "You have successfully unsubscribed!"
+
+msgid "birthdayNotification"
+msgstr "{employee} is having a birthday on {date}"
+
+msgid "employees"
+msgstr "Here's the full list of employees:"

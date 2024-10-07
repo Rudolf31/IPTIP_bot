@@ -1,4 +1,5 @@
 aiogram
+babel
 peewee
 python-dotenv
 pytz
