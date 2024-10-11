@@ -9,12 +9,15 @@ from config import BIRTHDAY_TSTAMP_FORMAT, REMINDER_TSTAMP_FORMAT
 
 from database.controllers.employee_controller import EmployeeController
 from database.controllers.subscriber_controller import SubscriberController
+from services.translation_service import TranslationService as TS
 
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
 logger = logging.getLogger(__name__)
+
+locale_ru = TS.getTranslation("ru")
 
 
 class DistributionService:
@@ -172,11 +175,17 @@ class DistributionService:
 
         logger.info(f"{employee.full_name} ({employee.tg_id}) - broadcasting notification...")
 
+        template = TS.getTemplate(locale_ru, "birthdayNotification")
+        message_text = template.format(
+            employee=employee.full_name,
+            date=employee.birthday
+        )
+
         # List of task to be run in parallel
         tasks = [
             cls.bot.send_message(
                 chat_id=subscriber.tg_id,
-                text=f"{employee.full_name} is having a birthday on {employee.birthday}")
+                text=message_text)
             for subscriber in subscribers
         ]
 
