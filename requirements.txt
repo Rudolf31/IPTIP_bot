@@ -3,3 +3,4 @@ babel
 peewee
 python-dotenv
 pytz
+pendulum
