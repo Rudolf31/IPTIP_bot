@@ -2,6 +2,7 @@ import logging
 import time
 import datetime
 import asyncio
+import pendulum
 
 from config import TOKEN
 from config import BIRTHDAY_NOTIFICATION_DAY_OFFSET
@@ -15,7 +16,7 @@ from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
-import pendulum
+from utils.current_time import now
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +24,6 @@ locale_ru = TS.getTranslation("ru")
 
 
 class DistributionService:
-
-    now = pendulum.now("Europe/Moscow")
 
     year_seconds = 31556952
     day_seconds = 86400
@@ -35,39 +34,21 @@ class DistributionService:
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
 
-    # TODO: find out what this function actually returns
-    # (God I hate Python)
-    # @classmethod
-    # def calculateNotificaionTime(cls, birth_date, reminder_day_offset) -> int:
-    #     """
-    #     Calculates the time of the next notification.
-
-    #     birth_date - Birthday of the employee
-    #     reminder_day_offset - Offset in days from the birthday.
-    #     """
-    #     current_year = time.localtime().tm_year - 1970
-    #     stripped_reminder_date = (birth_date - reminder_day_offset * cls.day_seconds) % cls.year_seconds
-    #     stripped_date_now = time.time() % cls.year_seconds
-
-    #     # If current stripped day is > stripped reminder date, then add 1 year
-    #     extra_years = 1 if stripped_reminder_date < stripped_date_now else 0
-
-    #     return (current_year + extra_years) * cls.year_seconds + stripped_reminder_date
-
     @classmethod
-    def calculateNotificaionTime(cls, birth_date, reminder_day_offset) -> int:
+    def calculateNotificaionTime(cls, birth_date, reminder_day_offset) -> pendulum.datetime:
         """
         Calculates the time of the next notification.
 
         birth_date - Birthday of the employee (as a Pendulum date)
         reminder_day_offset - Offset in days from the birthday.
         """
-        birthday_this_year = birth_date.replace(year=cls.now.year)
-        if cls.now > birthday_this_year:
+        birthday_this_year = birth_date.replace(year=now().year)
+        if now() > birthday_this_year.subtract(days=reminder_day_offset):
             birthday_this_year = birthday_this_year.add(years=1)
         notification_date = birthday_this_year.subtract(days=reminder_day_offset)
 
         return notification_date
+
 
     @classmethod
     def currentTimeFitsPeriod(cls, date, day_offset) -> bool:
@@ -77,26 +58,9 @@ class DistributionService:
         date - The target date
         day_offset - Offset in days from the date.
         """
-        current_year = (time.localtime().tm_year - 1970) * cls.year_seconds
-        stripped_date = date % cls.year_seconds + current_year
-        return (stripped_date - day_offset * cls.day_seconds) < time.time() and time.time() < stripped_date
+        stripped_date = date.replace(year=now().year)
+        return stripped_date.subtract(days=day_offset) < now() and now() < stripped_date
 
-    # @classmethod
-    # def isNotificationDue(cls, target_date, reminder_day_offset) -> int:
-    #     """
-    #     Checks if the notification is due.
-    #     Returns -1 if late, 1 if on time, 0 if early
-
-    #     target_date - Birthday of the employee
-    #     reminder_day_offset - Offset in days from the birthday.
-    #     """
-    #     # current_time = time.time()
-    #     if current_time > target_date + (reminder_day_offset * cls.day_seconds):
-    #         return -1  # Late
-    #     elif current_time > target_date:
-    #         return 1  # On time
-    #     else:
-    #         return 0  # Early
 
     @classmethod
     def isNotificationDue(cls, target_date, reminder_day_offset) -> int:
@@ -109,37 +73,16 @@ class DistributionService:
         """
         notification_due_date = target_date.add(days=reminder_day_offset)
 
-        if cls.now > notification_due_date:
+        if now() > notification_due_date:
             return -1  # Late
-        elif cls.now > target_date:
+        elif now() > target_date:
             return 1  # On time
         else:
             return 0  # Early
 
 
-    def timestampToUnix(timestamp, format) -> int:
-        """
-        Converts a timestamp sring in the given format
-        to unix timestamp (integer).
-
-        timestamp - timestamp string
-        format - timestamp format
-        """
-        return int(datetime.datetime.strptime(timestamp, format).timestamp())
-
-    # def unixToTimestamp(unix, format) -> str:
-    #     """
-    #     Converts a unix timestamp (integer)
-    #     to a timestamp string in the given format.
-
-    #     unix - unix timestamp
-    #     format - timestamp format
-    #     """
-    #     return datetime.datetime.fromtimestamp(unix).strftime(format)
-
-
     @staticmethod
-    def unixToTimestamp(date_time, format) -> str:
+    def datetimeToTimestamp(date_time, format) -> str:
         """
         Converts a DateTime object to a timestamp string in the given format.
 
@@ -158,12 +101,6 @@ class DistributionService:
 
         employee - must be an Employee object
         """
-
-        # birthday_timestamp = cls.timestampToUnix(employee.birthday, BIRTHDAY_TSTAMP_FORMAT)
-
-        # # Generated but will not necessarily be used
-        # new_scheduled_reminder = cls.calculateNotificaionTime(birthday_timestamp, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
-        
         # Parse the birthday string into a Pendulum date object
         birthday_date = pendulum.from_format(employee.birthday, 'DD-MM-YYYY')
 
@@ -177,17 +114,15 @@ class DistributionService:
             # period when the reminder is not yet scheduled, resulting
             # in a reminder being scheduled for the next year. That's why
             # we need to intervene and send the notification right away.
-            if cls.currentTimeFitsPeriod(birthday_timestamp, BIRTHDAY_NOTIFICATION_DAY_OFFSET):
+            if cls.currentTimeFitsPeriod(birthday_date, BIRTHDAY_NOTIFICATION_DAY_OFFSET):
                 await cls.broadcastBirthdayNotification(employee)
 
-            employee.scheduled_reminder = cls.unixToTimestamp(new_scheduled_reminder, REMINDER_TSTAMP_FORMAT)
+            employee.scheduled_reminder = cls.datetimeToTimestamp(new_scheduled_reminder, REMINDER_TSTAMP_FORMAT)
             employee.save()
             logger.info(f"{employee.full_name} ({employee.tg_id}) - scheduled for {employee.scheduled_reminder}")
 
             return False
 
-        # Checking scheduled notification time to see if we should do anything
-        # scheduled_reminder_unix = cls.timestampToUnix(employee.scheduled_reminder, REMINDER_TSTAMP_FORMAT)
         due_state = cls.isNotificationDue(new_scheduled_reminder, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
 
         # Too early, nothing to do
@@ -201,7 +136,7 @@ class DistributionService:
 
         # We either got it in time or too late,
         # let's schedule the next notification
-        employee.scheduled_reminder = cls.unixToTimestamp(new_scheduled_reminder, REMINDER_TSTAMP_FORMAT)
+        employee.scheduled_reminder = cls.datetimeToTimestamp(new_scheduled_reminder, REMINDER_TSTAMP_FORMAT)
         employee.save()
 
         logger.info(f"{employee.full_name} ({employee.tg_id}) - reminder set to {employee.scheduled_reminder}")
@@ -257,7 +192,6 @@ class DistributionService:
         """
         Handles birthday notifications at fixed periods of time.
         """
-
         # Avoid overloading
         if interval is None or interval < cls.minute_seconds:
             raise ValueError("Cycle interval must be at least 1 minute.")
