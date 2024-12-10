@@ -45,6 +45,8 @@ class Reminder(BaseModel):
     id = AutoField(primary_key=True)
     user = ForeignKeyField(User, field='id', backref='user')
     employee = ForeignKeyField(Employee, field='id', backref='employee')
+    date = DateTimeField()
+
 
     class Meta:
         indexes = (

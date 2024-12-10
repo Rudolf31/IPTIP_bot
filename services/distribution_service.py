@@ -10,11 +10,15 @@ from config import BIRTHDAY_TSTAMP_FORMAT, REMINDER_TSTAMP_FORMAT
 
 from database.controllers.employee_controller import EmployeeController
 from database.controllers.subscriber_controller import SubscriberController
+from database.controllers.reminder_controller import ReminderController
+from database.controllers.user_controller import UserController
+from database.application_context import Reminder
 from services.translation_service import TranslationService as TS
 
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from utils.current_time import now
 
@@ -25,10 +29,6 @@ locale_ru = TS.getTranslation("ru")
 
 class DistributionService:
 
-    year_seconds = 31556952
-    day_seconds = 86400
-    hour_seconds = 3600
-    minute_seconds = 60
     bot = Bot(
         token=TOKEN,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
@@ -59,7 +59,9 @@ class DistributionService:
         day_offset - Offset in days from the date.
         """
         stripped_date = date.replace(year=now().year)
-        return stripped_date.subtract(days=day_offset) < now() and now() < stripped_date
+        period = stripped_date - stripped_date.subtract(days=day_offset)
+
+        return now() in period
 
 
     @classmethod
@@ -72,6 +74,10 @@ class DistributionService:
         reminder_day_offset - Offset in days from the birthday.
         """
         notification_due_date = target_date.add(days=reminder_day_offset)
+
+        # The notification checked for reminders and that`s why we checked current day
+        if reminder_day_offset == 0:
+            return (now() - target_date).days < 1
 
         if now() > notification_due_date:
             return -1  # Late
@@ -167,19 +173,33 @@ class DistributionService:
 
         logger.info(f"{employee.full_name} ({employee.tg_id}) - broadcasting notification...")
 
+        employee_birthday = pendulum.from_format(employee.birthday, "DD-MM-YYYY").replace(year=now().year).format("DD-MM-YYYY")
+
         template = TS.getTemplate(locale_ru, "birthdayNotification")
         message_text = template.format(
             employee=employee.full_name,
             date=employee.birthday
         )
 
+        button_text = TS.getTemplate(locale_ru, "reminderButton")
+
+        button = InlineKeyboardButton(
+            text=button_text, 
+            callback_data=f"reminder:{employee.id}:{employee_birthday}"
+        )
+
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[[button]], resize_keyboard=True)
+
         # List of task to be run in parallel
         tasks = [
             cls.bot.send_message(
                 chat_id=subscriber.tg_id,
-                text=message_text)
+                text=message_text,
+                reply_markup=keyboard
+                )
             for subscriber in subscribers
         ]
+        
 
         # Running the tasks
         await asyncio.gather(*tasks)
@@ -187,13 +207,82 @@ class DistributionService:
 
         return True
 
+
     @classmethod
-    async def birthdayCycle(cls, forever=False, interval=hour_seconds) -> None:
+    async def createReminder(cls, user_tg_id, employee_id, date) -> bool:
+        """
+        Creates a reminder for the employee.
+
+        user_tg_id - id of the Telegram user
+        employee_id - id of the employee
+        date - for which date to create the reminder
+        """
+        user = await UserController.getUserByTgId(user_tg_id)
+        employee = await EmployeeController.getEmployeeById(employee_id)
+
+        # Check if the date is in the expired
+        date = pendulum.from_format(date, "DD-MM-YYYY")
+        if date <= now():
+            logger.info(f"{employee.full_name} ({employee.tg_id}) - date is expired")
+            return False
+
+        # Check if the user already has a reminder
+        try:
+            remind = await ReminderController.getReminderByEmployeeIdAndUserId(user.id, employee.id)
+            logger.info(f"{employee.full_name} ({employee.tg_id}) - user already has a reminder")
+            return False
+        except Exception:
+            pass
+        
+        await ReminderController.addReminderFromUserAndEmployee(user, employee, date.format("DD-MM-YYYY"))
+
+        return True
+
+
+    @classmethod
+    async def handleReminderSchedule(cls, reminder) -> bool:
+        """
+        Handles the reminder for the employee.
+
+        reminder - must be a Reminder object
+        """
+        reminder_date = pendulum.from_format(reminder.date, "DD-MM-YYYY")
+
+
+        due_state = cls.isNotificationDue(reminder_date, 0)
+
+        # Time to send the notification
+        if due_state == 1:
+            user = await UserController.getUserById(reminder.user_id)
+            template = TS.getTemplate(locale_ru, "reminderNotification")
+            employee = await EmployeeController.getEmployeeById(reminder.employee_id)
+            message_text = template.format(
+                employee=employee.full_name,
+            )
+            await cls.bot.send_message(
+                chat_id=user.tg_id,
+                text=message_text
+            )
+            
+            await ReminderController.deleteReminderById(reminder.id)
+        
+        # Too early, nothing to do
+        if due_state == 0:
+            logger.info(f"({reminder.id}) - too early")
+
+
+        logger.info(f"({reminder.id}) - nothing to do")
+
+        return False
+
+
+    @classmethod
+    async def birthdayCycle(cls, forever=False, interval=600) -> None:
         """
         Handles birthday notifications at fixed periods of time.
         """
         # Avoid overloading
-        if interval is None or interval < cls.minute_seconds:
+        if interval is None or interval < 60:  # 1 minute
             raise ValueError("Cycle interval must be at least 1 minute.")
 
         while True:
@@ -203,7 +292,14 @@ class DistributionService:
                 except Exception as e:
                     logger.exception(f"Failed to send birthday notification: {e}")
 
+            for reminder in await ReminderController.getReminders():
+                try:
+                    await cls.handleReminderSchedule(reminder)
+                except Exception as e:
+                    logger.exception(f"Failed to send reminder notification: {e}")
+                    
             if not forever:
                 break
 
             await asyncio.sleep(interval)
+            
