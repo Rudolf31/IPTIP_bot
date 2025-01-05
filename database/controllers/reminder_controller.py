@@ -7,7 +7,7 @@ class ReminderController():
     Reminder table, representing extra birthday reminders that a subscriber
     can request for the birthday of a particular employee.
     """
-    async def addReminderFromUserAndEmployee(user, employee) -> Reminder:
+    async def addReminderFromUserAndEmployee(user, employee, date) -> Reminder:
         """
         Addition of a new reminder.
 
@@ -19,7 +19,8 @@ class ReminderController():
 
                 new_reminder = Reminder.create(
                     user=user,
-                    employee=employee
+                    employee=employee,
+                    date=date
                 )
 
                 new_reminder.save()
@@ -49,6 +50,24 @@ class ReminderController():
             with database.atomic():
 
                 return Reminder.select().where(Reminder.user == user_id)
+
+    async def getReminders() -> Reminder:
+        """
+        Returns the Reminder object from the database.
+        """
+        return Reminder.select()
+
+
+    async def getReminderByEmployeeIdAndUserId(employee_id, user_id) -> Reminder:
+        """
+        Returns the Reminder object from the database that
+        matches the given employee id and user id.
+
+        employee_id - id of Employee
+        user_id - id of User
+        """
+        return Reminder.get(Reminder.user == user_id and Reminder.employee == employee_id)
+        
 
     async def deleteReminderById(id) -> bool:
         """

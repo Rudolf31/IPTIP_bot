@@ -7,6 +7,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.types import Message
+from aiogram.types.callback_query import CallbackQuery
 
 from services.user_service import UserService
 from services.employee_service import EmployeeService
@@ -98,6 +99,19 @@ async def get_employees_handler(message: Message) -> None:
 
     message_text = TS.getTemplate(locale_ru, "employees")
     await message.answer(f"{message_text}\n{formatted_list}")
+
+
+@dp.callback_query()
+async def get_send_shtrihcode(call: CallbackQuery):
+
+    message_text = TS.getTemplate(locale_ru, "reminderButtonPress")
+    date = call.data.split(":")[2]
+    user_tg_id = call.from_user.id
+    employee_id = call.data.split(":")[1]
+    await DistributionService.createReminder(user_tg_id, employee_id, date)
+    await call.answer()
+    await call.message.answer(message_text)
+    await call.message.edit_reply_markup(reply_markup=None)
 
 
 async def run_bot() -> None:
