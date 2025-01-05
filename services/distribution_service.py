@@ -5,6 +5,7 @@ import asyncio
 import pendulum
 
 from config import TOKEN
+from config import TIMEZONE
 from config import BIRTHDAY_NOTIFICATION_DAY_OFFSET
 from config import BIRTHDAY_TSTAMP_FORMAT, REMINDER_TSTAMP_FORMAT
 
@@ -59,9 +60,9 @@ class DistributionService:
         day_offset - Offset in days from the date.
         """
         stripped_date = date.replace(year=now().year)
-        period = stripped_date - stripped_date.subtract(days=day_offset)
-
-        return now() in period
+        # period = stripped_date - stripped_date.subtract(days=day_offset) 
+        
+        return stripped_date.subtract(days=day_offset) < now() and now() < stripped_date.add(days=1)
 
 
     @classmethod
@@ -108,7 +109,7 @@ class DistributionService:
         employee - must be an Employee object
         """
         # Parse the birthday string into a Pendulum date object
-        birthday_date = pendulum.from_format(employee.birthday, 'DD-MM-YYYY')
+        birthday_date = pendulum.from_format(employee.birthday, 'DD-MM-YYYY', tz=TIMEZONE)
 
         # Generated but will not necessarily be used
         new_scheduled_reminder = cls.calculateNotificaionTime(birthday_date, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
