@@ -66,7 +66,7 @@ class DistributionService:
 
 
     @classmethod
-    def isNotificationDue(cls, target_date, reminder_day_offset) -> int:
+    def isNotificationDue(cls, target_date, reminder_day_offset) -> int or bool:
         """
         Checks if the notification is due.
         Returns -1 if late, 1 if on time, 0 if early
@@ -78,7 +78,8 @@ class DistributionService:
 
         # The notification checked for reminders and that`s why we checked current day
         if reminder_day_offset == 0:
-            return (now() - target_date).days < 1
+            #return 0 < (now() - target_date).hours and (now() - target_date).hours < 12
+            return target_date.add(hours=15) < now() and now() < target_date.add(hours=17)
 
         if now() > notification_due_date:
             return -1  # Late
@@ -247,7 +248,7 @@ class DistributionService:
 
         reminder - must be a Reminder object
         """
-        reminder_date = pendulum.from_format(reminder.date, "DD-MM-YYYY")
+        reminder_date = pendulum.from_format(reminder.date, "DD-MM-YYYY", tz=TIMEZONE)
 
 
         due_state = cls.isNotificationDue(reminder_date, 0)
