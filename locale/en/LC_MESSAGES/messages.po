@@ -12,3 +12,12 @@ msgstr "{employee} is having a birthday on {date}"
 
 msgid "employees"
 msgstr "Here's the full list of employees:"
+
+msgid "reminderButton"
+msgstr "Remind in day 🥳"
+
+msgid "reminderButtonPress"
+msgstr "I will remined you 😌"
+
+msgid "reminderNotification"
+msgstr "I remind you: {employee} is celebrating their birthday today! 🎉"

@@ -8,10 +8,13 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install the dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt --prefer-binary
 
 # Copy the rest of the application code into the container
 COPY . .
+
+# Compile babel locale
+RUN pybabel compile -d locale -f
 
 # Command to run the application
 CMD ["python", "/app/__main__.py"]
