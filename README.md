@@ -14,8 +14,6 @@ A corporate Telegram bot which serves birthday reminders to your employees or co
 
 # Deployment
 
-Deployment instructions will be available here later
-
 ## Prerequisites
 
 In order to function properly, the application will need:
