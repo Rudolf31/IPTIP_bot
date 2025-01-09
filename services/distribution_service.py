@@ -79,7 +79,7 @@ class DistributionService:
         # The notification checked for reminders and that`s why we checked current day
         if reminder_day_offset == 0:
             #return 0 < (now() - target_date).hours and (now() - target_date).hours < 12
-            return target_date.add(hours=15) < now() and now() < target_date.add(hours=17)
+            return target_date.add(hours=8) < now() and now() < target_date.add(hours=18)
 
         if now() > notification_due_date:
             return -1  # Late
