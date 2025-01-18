@@ -130,8 +130,8 @@ class DistributionService:
             logger.info(f"{employee.full_name} ({employee.tg_id}) - scheduled for {employee.scheduled_reminder}")
 
             return False
-
-        due_state = cls.isNotificationDue(new_scheduled_reminder, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
+        scheduled_reminder = pendulum.from_format(employee.scheduled_reminder, 'DD-MM-YYYY HH:mm:ss', tz=TIMEZONE)
+        due_state = cls.isNotificationDue(scheduled_reminder, BIRTHDAY_NOTIFICATION_DAY_OFFSET)
 
         # Too early, nothing to do
         if due_state == 0:
