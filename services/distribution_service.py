@@ -83,7 +83,7 @@ class DistributionService:
 
         if now() > notification_due_date:
             return -1  # Late
-        elif now() > target_date:
+        elif now() > target_date and abs(now().hour - terget_date.hour) < 3:
             return 1  # On time
         else:
             return 0  # Early
