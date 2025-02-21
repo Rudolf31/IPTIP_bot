@@ -71,7 +71,7 @@ class DistributionService:
         Checks if the notification is due.
         Returns -1 if late, 1 if on time, 0 if early
 
-        target_date - Birthday of the employee
+        target_date - Birthday of the employee 
         reminder_day_offset - Offset in days from the birthday.
         """
         notification_due_date = target_date.add(days=reminder_day_offset)
@@ -83,7 +83,7 @@ class DistributionService:
 
         if now() > notification_due_date:
             return -1  # Late
-        elif now() > target_date and abs(now().hour - terget_date.hour) < 3:
+        elif (now() > target_date) and abs(now().hour - target_date.hour) < 3:
             return 1  # On time
         else:
             return 0  # Early
